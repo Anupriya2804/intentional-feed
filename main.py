@@ -1,6 +1,23 @@
 from fastapi import FastAPI
+import requests
 
 app = FastAPI()
+
+def fetch_hackernews():
+    top_stories_url = "https://hacker-news.firebaseio.com/v0/topstories.json"
+    top_ids = requests.get(top_stories_url).json()
+    articles = []
+    for story_id in top_ids[:5]:
+        story_url = f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json"
+        story = requests.get(story_url).json()
+        if story and "title" in story:
+            articles.append({
+                "title": story.get("title", "No title"),
+                "source": "HackerNews",
+                "url": story.get("url", "https://news.ycombinator.com"),
+                "score": story.get("score", 0)
+            })
+    return articles
 
 @app.get("/")
 def home():
@@ -8,22 +25,5 @@ def home():
 
 @app.get("/feed")
 def get_feed():
-    return {
-        "articles": [
-            {
-                "title": "How Google hires engineers",
-                "source": "HackerNews",
-                "url": "https://news.ycombinator.com"
-            },
-            {
-                "title": "Best system design resources",
-                "source": "Reddit",
-                "url": "https://reddit.com/r/cscareerquestions"
-            },
-            {
-                "title": "10 things I wish I knew before my Google interview",
-                "source": "Medium",
-                "url": "https://medium.com"
-            }
-        ]
-    }
+    articles = fetch_hackernews()
+    return {"articles": articles}
