@@ -231,7 +231,7 @@
         function searchTopic() {
             const topic = document.getElementById('search-input').value.trim();
             if (topic) {
-                loadFeed(`http://localhost:8000/feed/${topic}`);
+                loadFeed(`https://intentional-feed.onrender.com/feed/${topic}`);
             }
         }
 
@@ -239,7 +239,7 @@
             if (e.key === 'Enter') searchTopic();
         });
 
-        loadFeed('http://localhost:8000/feed');
+        loadFeed('https://intentional-feed.onrender.com/feed');
     </script>
 
 </body>
