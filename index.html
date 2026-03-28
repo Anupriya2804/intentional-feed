@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intentional Feed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f0f0f;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: white;
+            font-size: 16px;
+            width: 300px;
+        }
+
+        .search-bar button {
+            padding: 10px 24px;
+            border-radius: 20px;
+            border: none;
+            background: #ffffff;
+            color: #000000;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .search-bar button:hover {
+            background: #cccccc;
+        }
+
+        .stats {
+            text-align: center;
+            color: #888888;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .articles {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: #555555;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .card-title a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .card-title a:hover {
+            color: #aaaaaa;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #888888;
+        }
+
+        .source {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888888;
+            font-size: 18px;
+            margin-top: 60px;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .timer-label {
+            text-align: center;
+            color: #888888;
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+
+        .timer.warning {
+            color: #ff4444;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Intentional Feed</h1>
+    <p class="subtitle">Only content that matters to you</p>
+
+    <div class="timer" id="timer">20:00</div>
+    <p class="timer-label">Your session ends when timer hits zero</p>
+
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search a topic... (AI, python, startup)" />
+        <button onclick="searchTopic()">Search</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="articles" id="articles">
+        <div class="loading">Loading your feed...</div>
+    </div>
+
+    <script>
+        let timeLeft = 20 * 60;
+        let timerInterval = setInterval(updateTimer, 1000);
+
+        function updateTimer() {
+            timeLeft--;
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            let display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            let timerEl = document.getElementById('timer');
+            timerEl.textContent = display;
+
+            if (timeLeft <= 300) {
+                timerEl.classList.add('warning');
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('articles').innerHTML = `
+                    <div class="loading">
+                        <p style="font-size:32px">Session Complete!</p>
+                        <p style="margin-top:16px">You stayed intentional today.</p>
+                        <p style="margin-top:8px;color:#4CAF50">Close the tab and get back to building!</p>
+                    </div>`;
+            }
+        }
+
+        async function loadFeed(url) {
+            document.getElementById('articles').innerHTML = '<div class="loading">Loading...</div>';
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayArticles(data);
+            } catch (error) {
+                document.getElementById('articles').innerHTML = '<div class="loading">Error loading feed. Is your server running?</div>';
+            }
+        }
+
+        function displayArticles(data) {
+            const articles = data.articles;
+            const total = data.total_found || articles.length;
+
+            document.getElementById('stats').textContent = `${total} articles found for you`;
+
+            if (articles.length === 0) {
+                document.getElementById('articles').innerHTML = '<div class="loading">No articles found for this topic right now. Try another!</div>';
+                return;
+            }
+
+            let html = '';
+            articles.forEach(article => {
+                html += `
+                    <div class="card">
+                        <div class="card-title">
+                            <a href="${article.url}" target="_blank">${article.title}</a>
+                        </div>
+                        <div class="card-meta">
+                            <span class="source">${article.source}</span>
+                            <span>Score: ${article.score}</span>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('articles').innerHTML = html;
+        }
+
+        function searchTopic() {
+            const topic = document.getElementById('search-input').value.trim();
+            if (topic) {
+                loadFeed(`http://localhost:8000/feed/${topic}`);
+            }
+        }
+
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchTopic();
+        });
+
+        loadFeed('http://localhost:8000/feed');
+    </script>
+
+</body>
+</html>

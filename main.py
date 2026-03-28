@@ -3,6 +3,14 @@ import requests
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 MY_INTERESTS = ["AI", "startup", "coding", "python", "machine learning", 
                 "software", "developer", "programming", "tech", "google"]
 
@@ -58,3 +66,4 @@ def get_feed_by_topic(topic: str):
         "total_found": len(filtered_articles),
         "articles": filtered_articles
     }
+# Interest filtering is working
