@@ -21,11 +21,11 @@ you see. Just content relevant to where you want to go.
 
 ## How it works
 
-Your interests → FastAPI backend → HackerNews API
-↓
-Filters top stories
-↓
-Clean feed · 20 min timer
+1. You set your interests — AI, coding, startups, anything
+2. Backend fetches top stories from HackerNews live
+3. Filters out everything that doesn't match your topics
+4. Shows clean article cards in the browser
+5. 20 minute timer runs — when it hits zero, feed locks
 
 ---
 
